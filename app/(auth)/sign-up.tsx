@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 import { YStack, Input, Button, Text, Form, XStack, Card, H1, Paragraph, Separator } from 'tamagui';
 import { useRouter } from 'expo-router';
-import { Mail, Lock, User } from '@tamagui/lucide-icons';
 import { useSignUp } from '@clerk/clerk-expo';
 
 export default function SignUpScreen() {
@@ -14,6 +12,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState('');
+  const [error, setError] = useState('');
 
   const onSignUpPress = async () => {
     if (!isLoaded) {
@@ -21,19 +20,18 @@ export default function SignUpScreen() {
     }
 
     try {
+      // Include username in the creation since it's required
       await signUp.create({
+        username,
         emailAddress,
         password,
-        username,
       });
 
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-
       setPendingVerification(true);
     } catch (err: any) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
+      setError(err.errors?.[0]?.message || 'An error occurred during sign up');
     }
   };
 
@@ -52,11 +50,11 @@ export default function SignUpScreen() {
         router.replace('/');
       } else {
         console.error(JSON.stringify(completeSignUp, null, 2));
+        setError('Verification failed. Please try again.');
       }
     } catch (err: any) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
+      setError(err.errors?.[0]?.message || 'Failed to verify email');
     }
   };
 
@@ -67,56 +65,90 @@ export default function SignUpScreen() {
           Join StackSplit
         </H1>
         <Paragraph size="$5" theme="alt2">
-          Create an account to start splitting expenses
+          {pendingVerification
+            ? 'Please check your email for verification code'
+            : 'Create an account to start splitting expenses'}
         </Paragraph>
       </YStack>
 
+      {error ? (
+        <Text color="$red10" textAlign="center">
+          {error}
+        </Text>
+      ) : null}
+
       <Card elevate bordered padding="$4" size="$4">
-        <Form onSubmit={onSignUpPress} space="$4">
-          <YStack space="$3">
-            <Text fontWeight="600">Username</Text>
-            <Input
-              size="$4"
-              placeholder="Enter your username"
-              autoCapitalize="none"
-              value={username}
-              onChangeText={(text) => setUsername(text)}
-            />
-          </YStack>
+        {!pendingVerification ? (
+          <Form onSubmit={onSignUpPress} space="$4">
+            <YStack space="$3">
+              <Text fontWeight="600">Username</Text>
+              <Input
+                size="$4"
+                placeholder="Choose a username"
+                autoCapitalize="none"
+                value={username}
+                onChangeText={(text) => setUsername(text)}
+              />
+            </YStack>
 
-          <YStack space="$3">
-            <Text fontWeight="600">Email</Text>
-            <Input
-              size="$4"
-              placeholder="Enter your email"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={emailAddress}
-              onChangeText={(text) => setEmailAddress(text)}
-            />
-          </YStack>
+            <YStack space="$3">
+              <Text fontWeight="600">Email</Text>
+              <Input
+                size="$4"
+                placeholder="Enter your email"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={emailAddress}
+                onChangeText={(text) => setEmailAddress(text)}
+              />
+            </YStack>
 
-          <YStack space="$3">
-            <Text fontWeight="600">Password</Text>
-            <Input
-              size="$4"
-              placeholder="Choose a password"
-              secureTextEntry
-              value={password}
-              onChangeText={(text) => setPassword(text)}
-            />
-          </YStack>
+            <YStack space="$3">
+              <Text fontWeight="600">Password</Text>
+              <Input
+                size="$4"
+                placeholder="Choose a password"
+                secureTextEntry
+                value={password}
+                onChangeText={(text) => setPassword(text)}
+              />
+            </YStack>
 
-          <Button
-            size="$4"
-            theme="active"
-            backgroundColor="$blue10"
-            onPress={onSignUpPress}
-            pressStyle={{ opacity: 0.8 }}
-            animation="quick">
-            {pendingVerification ? 'Verify Email' : 'Create Account'}
-          </Button>
-        </Form>
+            <Button
+              size="$4"
+              theme="active"
+              backgroundColor="$blue10"
+              onPress={onSignUpPress}
+              pressStyle={{ opacity: 0.8 }}
+              animation="quick">
+              Create Account
+            </Button>
+          </Form>
+        ) : (
+          <Form onSubmit={onPressVerify} space="$4">
+            <YStack space="$3">
+              <Text fontWeight="600">Verification Code</Text>
+              <Input
+                size="$4"
+                placeholder="Enter verification code"
+                value={code}
+                onChangeText={setCode}
+                keyboardType="number-pad"
+                autoComplete="one-time-code"
+              />
+            </YStack>
+
+            <Button
+              size="$4"
+              theme="active"
+              backgroundColor="$blue10"
+              onPress={onPressVerify}
+              pressStyle={{ opacity: 0.8 }}
+              animation="quick">
+              Verify Email
+            </Button>
+          </Form>
+        )}
       </Card>
 
       <YStack space="$4" alignItems="center">

@@ -3,6 +3,7 @@ import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo';
 import { Slot } from 'expo-router';
 import { TamaguiProvider, createTamagui } from '@tamagui/core';
 import { config } from '@tamagui/config/v3';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const tamaguiConfig = createTamagui(config);
 
@@ -48,9 +49,11 @@ export default function RootLayoutNav() {
   return (
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <ClerkLoaded>
-        <TamaguiProvider config={tamaguiConfig}>
-          <Slot />
-        </TamaguiProvider>
+        <SafeAreaProvider>
+          <TamaguiProvider config={tamaguiConfig}>
+            <Slot />
+          </TamaguiProvider>
+        </SafeAreaProvider>
       </ClerkLoaded>
     </ClerkProvider>
   );

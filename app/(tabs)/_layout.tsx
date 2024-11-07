@@ -39,6 +39,7 @@ export default function TabLayout() {
             options={{
               title: 'Home',
               tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+              headerShown: false,
             }}
           />
           <Tabs.Screen
@@ -46,6 +47,7 @@ export default function TabLayout() {
             options={{
               title: 'Expenses',
               tabBarIcon: ({ color, size }) => <Receipt size={size} color={color} />,
+              headerShown: false,
             }}
           />
           <Tabs.Screen
@@ -53,13 +55,14 @@ export default function TabLayout() {
             options={{
               title: 'Groups',
               tabBarIcon: ({ color, size }) => <Users size={size} color={color} />,
+              headerShown: false,
             }}
           />
           <Tabs.Screen
             name="profile"
             options={{
-              title: 'Profile',
               tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+              headerShown: false,
             }}
           />
         </Tabs>
@@ -72,7 +75,7 @@ export default function TabLayout() {
           </Text>
         </YStack>
       </SignedOut>
-      <YStack alignItems="center" padding="$4">
+      <YStack alignItems="center" padding="$2">
         <Text color={theme.gray11.val} fontSize={16} fontWeight="600">
           Powered by Tamagui
         </Text>
