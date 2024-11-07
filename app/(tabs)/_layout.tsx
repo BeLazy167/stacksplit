@@ -1,33 +1,85 @@
-import { Link, Tabs } from 'expo-router';
-
-import { HeaderButton } from '../../components/HeaderButton';
-import { TabBarIcon } from '../../components/TabBarIcon';
+import { Redirect, Tabs } from 'expo-router';
+import { Home, Receipt, Users, User } from '@tamagui/lucide-icons';
+import { useTheme, YStack, Text } from 'tamagui';
+import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 
 export default function TabLayout() {
+  const theme = useTheme();
+
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: 'black',
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <HeaderButton />
-            </Link>
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="two"
-        options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        }}
-      />
-    </Tabs>
+    <YStack f={1} backgroundColor={theme.background.val}>
+      <SignedIn>
+        <Tabs
+          screenOptions={{
+            tabBarStyle: {
+              backgroundColor: theme.background.val,
+              borderTopColor: theme.borderColor.val,
+              height: 60,
+              paddingBottom: 8,
+              paddingTop: 8,
+            },
+            tabBarActiveTintColor: theme.blue10.val,
+            tabBarInactiveTintColor: theme.gray11.val,
+            headerStyle: {
+              backgroundColor: theme.background.val,
+            },
+            headerTintColor: theme.color.val,
+            headerShadowVisible: false,
+            headerTitleStyle: {
+              fontWeight: '600',
+              fontSize: 18,
+            },
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: '500',
+            },
+          }}>
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'Home',
+              tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+              headerShown: false,
+            }}
+          />
+          <Tabs.Screen
+            name="expenses"
+            options={{
+              title: 'Expenses',
+              tabBarIcon: ({ color, size }) => <Receipt size={size} color={color} />,
+              headerShown: false,
+            }}
+          />
+          <Tabs.Screen
+            name="groups"
+            options={{
+              title: 'Groups',
+              tabBarIcon: ({ color, size }) => <Users size={size} color={color} />,
+              headerShown: false,
+            }}
+          />
+          <Tabs.Screen
+            name="profile"
+            options={{
+              tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+              headerShown: false,
+            }}
+          />
+        </Tabs>
+      </SignedIn>
+      <SignedOut>
+        <Redirect href="/(auth)/sign-in" />
+        <YStack alignItems="center" padding="$4">
+          <Text color={theme.gray11.val} fontSize={16} fontWeight="600">
+            Please sign in to access the tabs.
+          </Text>
+        </YStack>
+      </SignedOut>
+      <YStack alignItems="center" padding="$2">
+        <Text color={theme.gray11.val} fontSize={16} fontWeight="600">
+          Powered by Tamagui
+        </Text>
+      </YStack>
+    </YStack>
   );
 }
