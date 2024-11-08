@@ -4,8 +4,20 @@ import { Slot } from 'expo-router';
 import { TamaguiProvider, createTamagui } from '@tamagui/core';
 import { config } from '@tamagui/config/v3';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useFonts } from 'expo-font';
+import { adelleFont } from '../config/fonts';
 
-const tamaguiConfig = createTamagui(config);
+const tamaguiConfig = createTamagui({
+  ...config,
+  fonts: {
+    heading: adelleFont,
+    body: adelleFont,
+
+  },
+  themes: {
+    ...config.themes,
+  },
+});
 
 type Conf = typeof tamaguiConfig;
 declare module '@tamagui/core' {
@@ -46,6 +58,25 @@ if (!publishableKey) {
 }
 
 export default function RootLayoutNav() {
+  const [loaded] = useFonts({
+    'AdelleCyrillic-Thin': require('../assets/fonts/AdelleCyrillic-Thin.ttf'),
+    'AdelleCyrillic-ThinItalic': require('../assets/fonts/AdelleCyrillic-ThinItalic.ttf'),
+    'AdelleCyrillic-Light': require('../assets/fonts/AdelleCyrillic-Light.ttf'),
+    'AdelleCyrillic-LightItalic': require('../assets/fonts/AdelleCyrillic-LightItalic.ttf'),
+    AdelleCyrillic: require('../assets/fonts/AdelleCyrillic.ttf'),
+    'AdelleCyrillic-Italic': require('../assets/fonts/AdelleCyrillic-Italic.ttf'),
+    'AdelleCyrillic-SemiBold': require('../assets/fonts/AdelleCyrillic-SemiBold.ttf'),
+    'AdelleCyrillic-SemiBoldItalic': require('../assets/fonts/AdelleCyrillic-SemiBoldItalic.ttf'),
+    'AdelleCyrillic-Bold': require('../assets/fonts/AdelleCyrillic-Bold.ttf'),
+    'AdelleCyrillic-BoldItalic': require('../assets/fonts/AdelleCyrillic-BoldItalic.ttf'),
+    'AdelleCyrillic-Extrabold': require('../assets/fonts/AdelleCyrillic-Extrabold.ttf'),
+    'AdelleCyrillic-ExtraboldItalic': require('../assets/fonts/AdelleCyrillic-ExtraboldItalic.ttf'),
+    'AdelleCyrillic-Heavy': require('../assets/fonts/AdelleCyrillic-Heavy.ttf'),
+    'AdelleCyrillic-HeavyItalic': require('../assets/fonts/AdelleCyrillic-HeavyItalic.ttf'),
+  });
+
+  if (!loaded) return null;
+
   return (
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <ClerkLoaded>

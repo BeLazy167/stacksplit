@@ -26,10 +26,12 @@ export default function TabLayout() {
             headerTintColor: theme.color.val,
             headerShadowVisible: false,
             headerTitleStyle: {
+              fontFamily: 'AdelleCyrillic-SemiBold',
               fontWeight: '600',
               fontSize: 18,
             },
             tabBarLabelStyle: {
+              fontFamily: 'AdelleCyrillic-SemiBold',
               fontSize: 12,
               fontWeight: '500',
             },
@@ -50,6 +52,7 @@ export default function TabLayout() {
               headerShown: false,
             }}
           />
+  
           <Tabs.Screen
             name="groups"
             options={{
@@ -61,6 +64,7 @@ export default function TabLayout() {
           <Tabs.Screen
             name="profile"
             options={{
+              title: 'Profile',
               tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
               headerShown: false,
             }}
@@ -70,13 +74,13 @@ export default function TabLayout() {
       <SignedOut>
         <Redirect href="/(auth)/sign-in" />
         <YStack alignItems="center" padding="$4">
-          <Text color={theme.gray11.val} fontSize={16} fontWeight="600">
+          <Text color={theme.gray11.val} fontSize={16} fontFamily="$body" fontWeight="$6">
             Please sign in to access the tabs.
           </Text>
         </YStack>
       </SignedOut>
       <YStack alignItems="center" padding="$2">
-        <Text color={theme.gray11.val} fontSize={16} fontWeight="600">
+        <Text color={theme.gray11.val} fontSize={16} fontFamily="$body" fontWeight="$6">
           Powered by Tamagui
         </Text>
       </YStack>

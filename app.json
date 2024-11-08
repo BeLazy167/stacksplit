@@ -48,6 +48,50 @@
       "eas": {
         "projectId": "7ac48762-5253-4941-8c5e-e161263f5d7a"
       }
-    }
+    },
+    "fonts": [
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-Thin.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-ThinItalic.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-Light.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-LightItalic.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-Italic.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-SemiBold.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-SemiBoldItalic.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-Bold.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-BoldItalic.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-Extrabold.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-ExtraboldItalic.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-Heavy.ttf"
+      },
+      {
+        "asset": "./assets/fonts/AdelleCyrillic-HeavyItalic.ttf"
+      }
+    ]
   }
 }

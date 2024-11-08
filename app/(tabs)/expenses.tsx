@@ -51,19 +51,19 @@ function ExpenseCard({ expense }: { expense: (typeof sampleExpenses)[0] }) {
         </Card>
 
         <YStack flex={1} space="$1">
-          <Text fontSize="$6" fontWeight="bold">
+          <Text fontSize="$6" fontFamily="$body" fontWeight="$7">
             {expense.title}
           </Text>
-          <Text theme="alt2" fontSize="$3">
+          <Text theme="alt2" fontSize="$3" fontFamily="$body" fontWeight="$4">
             {expense.date} • {expense.category}
           </Text>
         </YStack>
 
         <YStack alignItems="flex-end">
-          <Text fontSize="$6" fontWeight="bold" color="$blue10">
+          <Text fontSize="$6" fontFamily="$body" fontWeight="$7" color="$blue10">
             ${expense.amount.toFixed(2)}
           </Text>
-          <Text theme="alt2" fontSize="$3">
+          <Text theme="alt2" fontSize="$3" fontFamily="$body" fontWeight="$4">
             {expense.participants.length} people
           </Text>
         </YStack>
