@@ -1,6 +1,9 @@
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { Text, YStack, Button, H2, Card, XStack, Switch, Avatar, Separator } from 'tamagui';
-import { Moon, Bell, Shield, CreditCard, HelpCircle, Settings } from '@tamagui/lucide-icons';
+import { Moon, Bell, Shield, CreditCard, HelpCircle, Settings, ChevronRight } from '@tamagui/lucide-icons';
+import { EditProfileModal } from '~/components/Profile/EditProfileModal';
+import { useState } from 'react';
+import { Platform, View } from 'react-native';
 
 const menuItems = [
   { icon: Bell, label: 'Notifications', value: true },
@@ -14,10 +17,13 @@ const menuItems = [
 export default function ProfileScreen() {
   const { signOut } = useAuth();
   const { user } = useUser();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <YStack f={1} padding="$4" space="$4">
-      <H2 size="$8" color="$blue10">Profile</H2>
+      <H2 size="$8" color="$blue10">
+        Profile
+      </H2>
 
       <Card elevate bordered padding="$4" size="$4" space="$4">
         <XStack space="$4" alignItems="center">
@@ -25,19 +31,50 @@ export default function ProfileScreen() {
             <Avatar.Image source={{ uri: user?.imageUrl }} />
             <Avatar.Fallback backgroundColor="$blue5" />
           </Avatar>
-          
+
           <YStack>
             <Text fontSize="$6" fontWeight="bold">
-              {user?.firstName} {user?.lastName}
+              {user?.username}
             </Text>
-            <Text theme="alt2">
-              {user?.emailAddresses[0].emailAddress}
-            </Text>
+            <Text theme="alt2">{user?.emailAddresses[0].emailAddress}</Text>
           </YStack>
         </XStack>
+        <Button onPress={() => setIsOpen(true)}>
+          <XStack alignItems="center" space="$2">
+            <Settings size={16} color="$color" />
+            <Text>Edit Profile</Text>
+          </XStack>
+        </Button>
+        {Platform.OS === 'ios' ? (
+          <EditProfileModal
+            open={isOpen}
+            onOpenChange={setIsOpen}
+            currentUsername={user?.username ?? ''}
+            userEmail={user?.emailAddresses[0].emailAddress ?? ''}
+            onUpdateUsername={async (newUsername) => {
+              await user?.update({
+                username: newUsername,
+              });
+            }}
+          />
+        ) : (
+          isOpen && (
+            <EditProfileModal
+              open={isOpen}
+              onOpenChange={setIsOpen}
+              currentUsername={user?.username ?? ''}
+              userEmail={user?.emailAddresses[0].emailAddress ?? ''}
+              onUpdateUsername={async (newUsername) => {
+                await user?.update({
+                  username: newUsername,
+                });
+              }}
+            />
+          )
+        )}
       </Card>
 
-      <Card elevate bordered padding="$4" size="$4" space="$4">
+      <Card bordered padding="$4" size="$4" space="$4">
         {menuItems.map((item, index) => (
           <YStack key={item.label}>
             <XStack alignItems="center" justifyContent="space-between" paddingVertical="$2">
@@ -48,7 +85,7 @@ export default function ProfileScreen() {
               {'value' in item ? (
                 <Switch size="$4" defaultChecked={item.value} />
               ) : (
-                <Text color="$blue10">›</Text>
+                <ChevronRight size={20} color="$gray10" />
               )}
             </XStack>
             {index < menuItems.length - 1 && <Separator marginVertical="$2" />}
@@ -56,13 +93,9 @@ export default function ProfileScreen() {
         ))}
       </Card>
 
-      <Button
-        size="$4"
-        theme="red"
-        onPress={() => signOut()}
-        pressStyle={{ opacity: 0.7 }}>
+      <Button size="$4" theme="red" onPress={() => signOut()} pressStyle={{ opacity: 0.7 }}>
         Sign Out
       </Button>
     </YStack>
   );
-} 
+}

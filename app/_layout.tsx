@@ -1,6 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo';
 import { Slot } from 'expo-router';
+import { PortalProvider } from 'tamagui';
 import { TamaguiProvider, createTamagui } from '@tamagui/core';
 import { config } from '@tamagui/config/v3';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -12,7 +13,6 @@ const tamaguiConfig = createTamagui({
   fonts: {
     heading: adelleFont,
     body: adelleFont,
-
   },
   themes: {
     ...config.themes,
@@ -82,7 +82,9 @@ export default function RootLayoutNav() {
       <ClerkLoaded>
         <SafeAreaProvider>
           <TamaguiProvider config={tamaguiConfig}>
-            <Slot />
+            <PortalProvider>
+              <Slot />
+            </PortalProvider>
           </TamaguiProvider>
         </SafeAreaProvider>
       </ClerkLoaded>

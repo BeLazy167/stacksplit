@@ -55,7 +55,6 @@ export default function SignInScreen() {
               size="$4"
               placeholder="Enter your email and username"
               autoCapitalize="none"
-              keyboardType="email-address"
               value={credentials.email}
               onChangeText={(text) => setCredentials((prev) => ({ ...prev, email: text }))}
             />
