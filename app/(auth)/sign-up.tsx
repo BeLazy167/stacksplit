@@ -61,10 +61,17 @@ export default function SignUpScreen() {
   return (
     <YStack f={1} padding="$4" space="$4" backgroundColor="$background">
       <YStack space="$4" marginVertical="$6">
-        <H1 size="$9" color="$blue10">
+        <H1 
+          size="$9" 
+          color="$blue10"
+          fontFamily="$heading"
+          letterSpacing={-1}>
           Join StackSplit
         </H1>
-        <Paragraph size="$5" theme="alt2">
+        <Paragraph 
+          size="$5" 
+          theme="alt2"
+          fontFamily="$body">
           {pendingVerification
             ? 'Please check your email for verification code'
             : 'Create an account to start splitting expenses'}
@@ -72,7 +79,11 @@ export default function SignUpScreen() {
       </YStack>
 
       {error ? (
-        <Text color="$red10" textAlign="center">
+        <Text 
+          color="$red10" 
+          textAlign="center"
+          fontFamily="$body"
+          fontWeight="$6">
           {error}
         </Text>
       ) : null}
@@ -81,9 +92,14 @@ export default function SignUpScreen() {
         {!pendingVerification ? (
           <Form onSubmit={onSignUpPress} space="$4">
             <YStack space="$3">
-              <Text fontWeight="600">Username</Text>
+              <Text 
+                fontWeight="$6"
+                fontFamily="$body">
+                Username
+              </Text>
               <Input
                 size="$4"
+                fontFamily="$body"
                 placeholder="Choose a username"
                 autoCapitalize="none"
                 value={username}
@@ -154,15 +170,20 @@ export default function SignUpScreen() {
       <YStack space="$4" alignItems="center">
         <XStack space="$2" alignItems="center">
           <Separator />
-          <Text color="$gray11">OR</Text>
+          <Text 
+            color="$gray11"
+            fontFamily="$body">
+            OR
+          </Text>
           <Separator />
         </XStack>
 
         <XStack space="$2" justifyContent="center">
-          <Text>Already have an account?</Text>
+          <Text fontFamily="$body">Already have an account?</Text>
           <Text
             color="$blue10"
-            fontWeight="600"
+            fontWeight="$6"
+            fontFamily="$body"
             onPress={() => router.push('/sign-in')}
             pressStyle={{ opacity: 0.8 }}>
             Sign in

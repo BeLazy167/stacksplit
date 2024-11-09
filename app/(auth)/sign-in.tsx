@@ -50,12 +50,11 @@ export default function SignInScreen() {
       <Card elevate bordered padding="$4" size="$4">
         <Form onSubmit={onSignInPress} space="$4">
           <YStack space="$3">
-            <Text fontWeight="600">Email</Text>
+            <Text fontWeight="600">Email or Username</Text>
             <Input
               size="$4"
-              placeholder="Enter your email"
+              placeholder="Enter your email and username"
               autoCapitalize="none"
-              keyboardType="email-address"
               value={credentials.email}
               onChangeText={(text) => setCredentials((prev) => ({ ...prev, email: text }))}
             />
