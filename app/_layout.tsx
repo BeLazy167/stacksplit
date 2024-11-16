@@ -7,6 +7,10 @@ import { config } from '@tamagui/config/v3';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import { adelleFont } from '../config/fonts';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '~/utils/query-client';
+import { DarkModeProvider, useDarkMode } from '~/utils/DarkModeContext';
+import { YStack } from 'tamagui';
 
 const tamaguiConfig = createTamagui({
   ...config,
@@ -57,7 +61,7 @@ if (!publishableKey) {
   );
 }
 
-export default function RootLayoutNav() {
+export default function RootLayout() {
   const [loaded] = useFonts({
     'AdelleCyrillic-Thin': require('../assets/fonts/AdelleCyrillic-Thin.ttf'),
     'AdelleCyrillic-ThinItalic': require('../assets/fonts/AdelleCyrillic-ThinItalic.ttf'),
@@ -78,16 +82,38 @@ export default function RootLayoutNav() {
   if (!loaded) return null;
 
   return (
-    <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-      <ClerkLoaded>
-        <SafeAreaProvider>
-          <TamaguiProvider config={tamaguiConfig}>
-            <PortalProvider>
-              <Slot />
-            </PortalProvider>
-          </TamaguiProvider>
-        </SafeAreaProvider>
-      </ClerkLoaded>
-    </ClerkProvider>
+    <DarkModeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
+          <ClerkLoaded>
+            <SafeAreaProvider>
+              <TamaguiProviderWithDarkMode config={tamaguiConfig}>
+                <PortalProvider>
+                  <Slot />
+                </PortalProvider>
+              </TamaguiProviderWithDarkMode>
+            </SafeAreaProvider>
+          </ClerkLoaded>
+        </ClerkProvider>
+      </QueryClientProvider>
+    </DarkModeProvider>
+  );
+}
+
+function TamaguiProviderWithDarkMode({
+  children,
+  config,
+}: {
+  children: React.ReactNode;
+  config: typeof tamaguiConfig;
+}) {
+  const { isDarkMode } = useDarkMode();
+
+  return (
+    <TamaguiProvider config={config} defaultTheme={isDarkMode ? 'dark' : 'light'}>
+      <YStack f={1} backgroundColor="$background">
+        {children}
+      </YStack>
+    </TamaguiProvider>
   );
 }
