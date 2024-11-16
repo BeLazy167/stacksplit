@@ -15,8 +15,8 @@ export default function TabLayout() {
               backgroundColor: theme.background.val,
               borderTopColor: theme.borderColor.val,
               height: 60,
-              paddingBottom: 8,
-              paddingTop: 8,
+              paddingBottom: 4,
+              paddingTop: 4,
             },
             tabBarActiveTintColor: theme.blue10.val,
             tabBarInactiveTintColor: theme.gray11.val,
@@ -86,11 +86,6 @@ export default function TabLayout() {
           </Text>
         </YStack>
       </SignedOut>
-      <YStack alignItems="center" padding="$2">
-        <Text color={theme.gray11.val} fontSize={16} fontFamily="$body" fontWeight="$6">
-          Powered by Tamagui
-        </Text>
-      </YStack>
     </YStack>
   );
 }
