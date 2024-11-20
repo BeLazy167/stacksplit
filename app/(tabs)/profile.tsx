@@ -1,136 +1,147 @@
 import { useAuth, useUser } from '@clerk/clerk-expo';
-import { Text, YStack, Button, H2, Card, XStack, Switch, Avatar, Separator } from 'tamagui';
+import { Text, YStack, Button, H2, Card, XStack, Avatar, Separator } from 'tamagui';
 import { PageWrapper } from '~/components/Layout/PageWrapper';
 import { Moon, Settings, ChevronRight, Sun } from '@tamagui/lucide-icons';
 import { EditProfileModal } from '~/components/Profile/EditProfileModal';
-import { useState } from 'react';
-import { Platform, ScrollView } from 'react-native';
+import { useState, memo, useCallback } from 'react';
 import { useDarkMode } from '~/utils/DarkModeContext';
+import { Switch as RNSwitch } from 'react-native';
+import { useTheme } from 'tamagui';
+
+// Custom Switch component using React Native's Switch for better performance
+const ThemeSwitch = memo(function ThemeSwitch({
+  value,
+  onValueChange,
+}: {
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+}) {
+  const theme = useTheme();
+
+  return (
+    <RNSwitch
+      value={value}
+      onValueChange={onValueChange}
+      trackColor={{
+        false: theme.gray5.val,
+        true: theme.blue10.val,
+      }}
+      thumbColor={theme.background.val}
+      ios_backgroundColor={theme.gray5.val}
+    />
+  );
+});
 
 export default function ProfileScreen() {
   const { signOut } = useAuth();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
-  const menuItems = [
-    {
-      icon: isDarkMode ? Moon : Sun,
-      label: 'Dark Mode',
-      value: isDarkMode,
-      onValueChange: toggleDarkMode,
+  // Memoize handlers
+  const handleThemeChange = useCallback(
+    (value: boolean) => {
+      toggleDarkMode();
     },
-    { icon: Settings, label: 'Settings', href: '/settings' },
-  ];
+    [toggleDarkMode]
+  );
+
+  const handleSignOut = useCallback(() => {
+    signOut();
+  }, [signOut]);
+
+  const handleEditProfile = useCallback(() => {
+    setIsOpen(true);
+  }, []);
+
+  if (!isLoaded || !user) {
+    return (
+      <PageWrapper>
+        <YStack flex={1} justifyContent="center" alignItems="center">
+          <Text>Loading...</Text>
+        </YStack>
+      </PageWrapper>
+    );
+  }
+
+  const primaryEmail = user.emailAddresses.find(
+    (email) => email.id === user.primaryEmailAddressId
+  )?.emailAddress;
 
   return (
     <PageWrapper>
-      <H2 size="$8" color="$blue10">
-        Profile
-      </H2>
+      <YStack flex={1} space="$4">
+        <H2 size="$8" color="$blue10">
+          Profile
+        </H2>
 
-      <Card elevate bordered padding="$4" size="$4" space="$4">
-        <XStack space="$4" alignItems="center">
-          <Avatar circular size="$6">
-            <Avatar.Image source={{ uri: user?.imageUrl }} />
-            <Avatar.Fallback backgroundColor="$blue5" />
-          </Avatar>
+        {/* Profile Card */}
+        <Card elevate bordered padding="$4" size="$4" space="$4">
+          <XStack space="$4" alignItems="center">
+            <Avatar circular size="$6">
+              <Avatar.Image source={{ uri: user.imageUrl }} />
+              <Avatar.Fallback backgroundColor="$blue5" />
+            </Avatar>
 
-          <YStack>
-            <Text fontSize="$6" fontWeight="bold">
-              {user?.username}
-            </Text>
-            <Text theme="alt2">{user?.emailAddresses[0].emailAddress}</Text>
-          </YStack>
-        </XStack>
-        <Button onPress={() => setIsOpen(true)}>
-          <XStack alignItems="center" space="$2">
-            <Settings size={16} color="$color" />
-            <Text>Edit Profile</Text>
+            <YStack flex={1}>
+              <Text fontSize="$6" fontWeight="bold">
+                {user.username || 'Username not set'}
+              </Text>
+              <Text theme="alt2">{primaryEmail || 'No email'}</Text>
+            </YStack>
           </XStack>
-        </Button>
-        {Platform.OS === 'ios' ? (
-          <EditProfileModal
-            open={isOpen}
-            onOpenChange={setIsOpen}
-            currentUsername={user?.username ?? ''}
-            userEmail={user?.emailAddresses[0].emailAddress ?? ''}
-            onUpdateUsername={async (newUsername) => {
-              await user?.update({
-                username: newUsername,
-              });
-            }}
-          />
-        ) : (
-          isOpen && (
-            <EditProfileModal
-              open={isOpen}
-              onOpenChange={setIsOpen}
-              currentUsername={user?.username ?? ''}
-              userEmail={user?.emailAddresses[0].emailAddress ?? ''}
-              onUpdateUsername={async (newUsername) => {
-                await user?.update({
-                  username: newUsername,
-                });
-              }}
-            />
-          )
-        )}
-      </Card>
 
-      <Card bordered padding="$4" size="$4" space="$4">
-        {menuItems.map((item, index) => (
-          <YStack key={item.label}>
+          <Button onPress={handleEditProfile} pressStyle={{ opacity: 0.7 }}>
+            <XStack alignItems="center" space="$2">
+              <Settings size={16} color="$color" />
+              <Text>Edit Profile</Text>
+            </XStack>
+          </Button>
+        </Card>
+
+        {/* Settings Card */}
+        <Card bordered padding="$4" size="$4" space="$4">
+          <YStack>
             <XStack alignItems="center" justifyContent="space-between" paddingVertical="$2">
               <XStack space="$2" alignItems="center">
-                <item.icon size={20} color="$color" />
-                <Text>{item.label}</Text>
+                {isDarkMode ? <Moon size={20} color="$color" /> : <Sun size={20} color="$color" />}
+                <Text>Dark Mode</Text>
               </XStack>
-              {'value' in item ? (
-                <Switch
-                  checked={item.value}
-                  onCheckedChange={item.onValueChange}
-                  animation={[
-                    'quick',
-                    {
-                      transform: {
-                        type: 'lazy',
-                        damping: 20,
-                        stiffness: 160,
-                      },
-                    },
-                  ]}
-                  backgroundColor={item.value ? '$blue10' : '$gray5'}
-                  size="$3"
-                  margin="$-0.5"
-                  padding="$0.5"
-                  borderRadius="$10"
-                  pressStyle={{
-                    scale: 0.97,
-                    opacity: 0.9,
-                  }}>
-                  <Switch.Thumb
-                    animation="quick"
-                    scale={0.9}
-                    backgroundColor="$background"
-                    shadowColor="black"
-                    shadowOffset={{ width: 0, height: 1 }}
-                    shadowOpacity={0.1}
-                    shadowRadius={2}
-                  />
-                </Switch>
-              ) : (
-                <ChevronRight size={20} color="$gray10" />
-              )}
+              <ThemeSwitch value={isDarkMode} onValueChange={handleThemeChange} />
             </XStack>
-            {index < menuItems.length - 1 && <Separator marginVertical="$2" />}
-          </YStack>
-        ))}
-      </Card>
+            <Separator marginVertical="$2" />
 
-      <Button size="$4" theme="active" onPress={() => signOut()} pressStyle={{ opacity: 0.7 }}>
-        Sign Out
-      </Button>
+            <Button chromeless pressStyle={{ opacity: 0.7 }}>
+              <XStack alignItems="center" justifyContent="space-between" paddingVertical="$2">
+                <XStack space="$2" alignItems="center">
+                  <Settings size={20} color="$color" />
+                  <Text>Settings</Text>
+                </XStack>
+                <ChevronRight size={20} color="$gray10" />
+              </XStack>
+            </Button>
+          </YStack>
+        </Card>
+
+        <Button size="$4" theme="active" onPress={handleSignOut} pressStyle={{ opacity: 0.7 }}>
+          Sign Out
+        </Button>
+
+        <EditProfileModal
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          currentUsername={user.username || ''}
+          userEmail={primaryEmail || ''}
+          onUpdateUsername={async (newUsername: string) => {
+            try {
+              await user.update({ username: newUsername });
+            } catch (error) {
+              console.error('Failed to update username:', error);
+              throw error;
+            }
+          }}
+        />
+      </YStack>
     </PageWrapper>
   );
 }

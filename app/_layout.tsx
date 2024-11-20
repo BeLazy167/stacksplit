@@ -82,21 +82,21 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    <DarkModeProvider>
-      <QueryClientProvider client={queryClient}>
-        <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-          <ClerkLoaded>
-            <SafeAreaProvider>
+    <SafeAreaProvider>
+      <DarkModeProvider>
+        <QueryClientProvider client={queryClient}>
+          <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
+            <ClerkLoaded>
               <TamaguiProviderWithDarkMode config={tamaguiConfig}>
                 <PortalProvider>
                   <Slot />
                 </PortalProvider>
               </TamaguiProviderWithDarkMode>
-            </SafeAreaProvider>
-          </ClerkLoaded>
-        </ClerkProvider>
-      </QueryClientProvider>
-    </DarkModeProvider>
+            </ClerkLoaded>
+          </ClerkProvider>
+        </QueryClientProvider>
+      </DarkModeProvider>
+    </SafeAreaProvider>
   );
 }
 
