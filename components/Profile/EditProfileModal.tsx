@@ -5,6 +5,7 @@ import { Camera, X } from '@tamagui/lucide-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Platform, KeyboardAvoidingView } from 'react-native';
 import { Image } from 'expo-image';
+import * as FileSystem from 'expo-file-system';
 
 interface EditProfileModalProps {
   open: boolean;
@@ -26,6 +27,7 @@ export function EditProfileModal({
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [base64Data, setBase64Data] = useState('');
 
   const handleImagePick = async () => {
     try {
@@ -40,10 +42,12 @@ export function EditProfileModal({
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.7,
+        base64: true,
       });
 
       if (!result.canceled && result.assets?.[0]) {
         setSelectedImage(result.assets[0].uri);
+        setBase64Data(result.assets[0].base64 || '');
         setError('');
       }
     } catch (err) {
@@ -57,9 +61,11 @@ export function EditProfileModal({
       setIsLoading(true);
       setError('');
 
-      if (selectedImage) {
+      if (selectedImage && base64Data) {
+        const formattedBase64 = `data:image/jpeg;base64,${base64Data}`;
+
         await user?.setProfileImage({
-          file: selectedImage,
+          file: formattedBase64,
         });
       }
 
@@ -70,7 +76,7 @@ export function EditProfileModal({
       onOpenChange(false);
     } catch (err) {
       console.error('Update error:', err);
-      setError('Failed to update profile');
+      setError('Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -84,24 +90,14 @@ export function EditProfileModal({
       snapPoints={[Platform.OS === 'ios' ? 80 : 70]}
       position={0}
       dismissOnSnapToBottom
-      zIndex={100000}
-    >
-      <Sheet.Overlay 
-        animation="lazy" 
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
-      />
-      <Sheet.Frame
-        padding="$4"
-        space="$4"
-        backgroundColor="$background"
-      >
+      zIndex={100000}>
+      <Sheet.Overlay animation="lazy" enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+      <Sheet.Frame padding="$4" space="$4" backgroundColor="$background">
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
-        >
+          style={{ flex: 1 }}>
           <Sheet.Handle />
-          
+
           <YStack space="$4" flex={1}>
             <XStack justifyContent="space-between" alignItems="center">
               <H2 size="$6">Edit Profile</H2>
@@ -129,8 +125,7 @@ export function EditProfileModal({
                 theme="blue"
                 icon={Camera}
                 onPress={handleImagePick}
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
                 Change Photo
               </Button>
             </YStack>
@@ -158,12 +153,7 @@ export function EditProfileModal({
 
               <YStack space="$2">
                 <Text color="$gray11">Email</Text>
-                <Input 
-                  value={userEmail} 
-                  editable={false} 
-                  opacity={0.7}
-                  backgroundColor="$gray3"
-                />
+                <Input value={userEmail} editable={false} opacity={0.7} backgroundColor="$gray3" />
               </YStack>
             </YStack>
 
@@ -172,16 +162,14 @@ export function EditProfileModal({
                 size="$4"
                 theme="blue"
                 onPress={handleSave}
-                disabled={isLoading || (!username && !selectedImage)}
-              >
+                disabled={isLoading || (!username && !selectedImage)}>
                 {isLoading ? 'Saving...' : 'Save Changes'}
               </Button>
               <Button
                 size="$4"
                 theme="gray"
                 onPress={() => onOpenChange(false)}
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
                 Cancel
               </Button>
             </YStack>
