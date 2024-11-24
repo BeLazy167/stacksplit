@@ -52,7 +52,7 @@ export default function ProfileScreen() {
 
   const handleEditProfile = useCallback(() => {
     setIsOpen(true);
-  }, []);
+  }, []); 
 
   if (!isLoaded || !user) {
     return (

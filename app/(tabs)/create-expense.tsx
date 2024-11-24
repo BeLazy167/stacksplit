@@ -86,8 +86,10 @@ export default function CreateExpense() {
 
   return (
     <PageWrapper>
-      <H2 size="$8" color="$blue10">Create Expense</H2>
-      
+      <H2 size="$8" color="$blue10">
+        Create Expense
+      </H2>
+
       <Card elevate bordered padding="$4" size="$4" space="$4">
         <Form onSubmit={handleSubmit}>
           <YStack space="$4">

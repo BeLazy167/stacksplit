@@ -34,14 +34,16 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.belazy.stacksplit"
+      "bundleIdentifier": "com.belazy.stacksplit",
+      "newArchEnabled": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.belazy.stacksplit"
+      "package": "com.belazy.stacksplit",
+      "newArchEnabled": true
     },
     "extra": {
       "eas": {
