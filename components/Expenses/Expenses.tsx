@@ -1,7 +1,17 @@
 import { Text, YStack, Card, H2, ScrollView, XStack, Avatar, Separator } from 'tamagui';
 import { DollarSign, Coffee, ShoppingCart, Car, Home } from '@tamagui/lucide-icons';
 
-const sampleExpenses = [
+export type Expense = {
+  id: string | number;
+  title: string;
+  amount: number;
+  date: string;
+  category: string;
+  participants: string[];
+  icon: any;
+};
+
+const sampleExpenses: Expense[] = [
   {
     id: 1,
     title: 'Coffee Run',

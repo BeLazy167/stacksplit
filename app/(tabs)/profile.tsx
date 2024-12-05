@@ -3,11 +3,12 @@ import { Text, YStack, Button, H2, Card, XStack, Avatar, Separator } from 'tamag
 import { PageWrapper } from '~/components/Layout/PageWrapper';
 import { Moon, Settings, ChevronRight, Sun } from '@tamagui/lucide-icons';
 import { EditProfileModal } from '~/components/Profile/EditProfileModal';
-import { useState, memo, useCallback } from 'react';
+import { useState, memo, useCallback, useEffect } from 'react';
 import { useDarkMode } from '~/utils/DarkModeContext';
 import { Switch as RNSwitch, Platform } from 'react-native';
 import { useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFirebaseUser } from '../../utils/useFirebaseUser';
 
 // Custom Switch component using React Native's Switch for better performance
 const ThemeSwitch = memo(function ThemeSwitch({
@@ -40,6 +41,14 @@ export default function ProfileScreen() {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const { firebaseUser, loading, signIn } = useFirebaseUser();
+
+  useEffect(() => {
+    // Automatically sign in to Firebase when the user is authenticated with Clerk
+    if (user && !firebaseUser && !loading) {
+      signIn().catch(console.error);
+    }
+  }, [user, firebaseUser, loading]);
 
   const handleThemeChange = useCallback(
     (value: boolean) => {
@@ -56,6 +65,15 @@ export default function ProfileScreen() {
     setIsOpen(true);
   }, []);
 
+  const handleFirebaseSignIn = async () => {
+    try {
+      await signIn();
+      console.log('Successfully signed in to Firebase');
+    } catch (error) {
+      console.error('Failed to sign in to Firebase:', error);
+    }
+  };
+
   if (!isLoaded || !user) {
     return (
       <PageWrapper>
@@ -71,11 +89,7 @@ export default function ProfileScreen() {
   )?.emailAddress;
 
   return (
-    <YStack 
-      flex={1} 
-      backgroundColor="$background"
-      paddingTop={insets.top}
-    >
+    <YStack flex={1} backgroundColor="$background" paddingTop={insets.top}>
       <YStack flex={1} space="$4" padding="$4">
         <H2 size="$8" color="$blue10">
           Profile
@@ -97,14 +111,13 @@ export default function ProfileScreen() {
             </YStack>
           </XStack>
 
-          <Button 
-            onPress={handleEditProfile} 
-            pressStyle={{ opacity: 0.7 }} 
+          <Button
+            onPress={handleEditProfile}
+            pressStyle={{ opacity: 0.7 }}
             animation="quick"
             backgroundColor="$background"
             borderColor="$gray8"
-            borderWidth={1}
-          >
+            borderWidth={1}>
             <XStack alignItems="center" space="$2">
               <Settings size={16} color={theme.color.val} />
               <Text>Edit Profile</Text>
@@ -129,11 +142,7 @@ export default function ProfileScreen() {
 
             <Separator />
 
-            <Button 
-              chromeless 
-              pressStyle={{ opacity: 0.7 }}
-              backgroundColor="transparent"
-            >
+            <Button chromeless pressStyle={{ opacity: 0.7 }} backgroundColor="transparent">
               <XStack alignItems="center" justifyContent="space-between">
                 <XStack space="$2" alignItems="center">
                   <Settings size={20} color={theme.color.val} />
@@ -152,8 +161,7 @@ export default function ProfileScreen() {
           pressStyle={{ opacity: 0.7 }}
           animation="quick"
           marginTop="auto"
-          marginBottom={insets.bottom}
-        >
+          marginBottom={insets.bottom}>
           Sign Out
         </Button>
 
@@ -173,6 +181,9 @@ export default function ProfileScreen() {
             }}
           />
         )}
+
+        <Text>Clerk User ID: {user?.id}</Text>
+        <Text>Firebase User ID: {firebaseUser?.uid}</Text>
       </YStack>
     </YStack>
   );
