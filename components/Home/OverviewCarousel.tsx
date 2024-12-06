@@ -54,28 +54,24 @@ const overviewData = [
   },
 ];
 
-const OverviewCard = memo(function OverviewCard({ item, index }: { item: typeof overviewData[0], index: number }) {
+const OverviewCard = memo(function OverviewCard({
+  item,
+  index,
+}: {
+  item: (typeof overviewData)[0];
+  index: number;
+}) {
   const Icon = item.icon;
-  
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: withSpring(0.95) }],
   }));
 
   return (
     <Animated.View style={animatedStyle}>
-      <Card
-        elevate
-        bordered
-        padding="$3"
-        marginHorizontal="$2"
-        backgroundColor={item.bgColor}>
+      <Card elevate bordered padding="$3" marginHorizontal="$2" backgroundColor={item.bgColor}>
         <XStack space="$4" alignItems="center">
-          <Card
-            size="$3"
-            padding="$2"
-            backgroundColor={item.color}
-            borderRadius="$4"
-            opacity={0.9}>
+          <Card size="$3" padding="$2" backgroundColor={item.color} borderRadius="$4" opacity={0.9}>
             <Icon size={20} color="white" />
           </Card>
 
@@ -87,10 +83,7 @@ const OverviewCard = memo(function OverviewCard({ item, index }: { item: typeof 
               <Text fontSize="$5" fontWeight="bold" color={item.color}>
                 {item.value}
               </Text>
-              <Text
-                fontSize="$3"
-                color={item.isPositive ? '$green10' : '$red10'}
-                fontWeight="bold">
+              <Text fontSize="$3" color={item.isPositive ? '$green10' : '$red10'} fontWeight="bold">
                 {item.change}
               </Text>
             </XStack>
@@ -105,9 +98,12 @@ export default memo(function OverviewCarousel() {
   const { width } = useWindowDimensions();
   const cardWidth = width * 0.8;
 
-  const renderItem = useCallback(({ item, index }) => (
-    <OverviewCard item={item} index={index} />
-  ), []);
+  const renderItem = useCallback(
+    ({ item, index }: { item: (typeof overviewData)[0]; index: number }) => (
+      <OverviewCard item={item} index={index} />
+    ),
+    []
+  );
 
   return (
     <YStack flex={1}>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../utils/firebase';
-import { useFirebaseUser } from '../../utils/useFirebaseUser';
+import { db } from '~/utils/firebase';
+import { useFirebaseUser } from '~/utils/useFirebaseUser';
 import { ExpenseCard } from './ExpenseCard';
 import { YStack, Text } from 'tamagui';
 import { Expense } from './Expenses';

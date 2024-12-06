@@ -3,7 +3,7 @@ import { Text, YStack, Button, H2, Card, XStack, Avatar, Separator } from 'tamag
 import { PageWrapper } from '~/components/Layout/PageWrapper';
 import { Moon, Settings, ChevronRight, Sun, Users } from '@tamagui/lucide-icons';
 import { EditProfileModal } from '~/components/Profile/EditProfileModal';
-import { FriendsModal } from '~/components/Profile/FriendsModal';
+import { FriendsModal } from '~/components/Friends/FriendsModal';
 import { useState, memo, useCallback, useEffect } from 'react';
 import { useDarkMode } from '~/utils/DarkModeContext';
 import { Switch as RNSwitch, Platform } from 'react-native';
