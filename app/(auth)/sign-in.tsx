@@ -25,7 +25,7 @@ export default function SignInScreen() {
 
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId });
-        router.replace('/');
+        router.replace('/(tabs)');
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
         Alert.alert('Error', 'Invalid email or password');

@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Platform, KeyboardAvoidingView, Modal } from 'react-native';
 import { Image } from 'expo-image';
 import * as FileSystem from 'expo-file-system';
+import { updateUserProfile } from '../../utils/firebase';
 
 interface EditProfileModalProps {
   open: boolean;
@@ -71,6 +72,16 @@ export function EditProfileModal({
 
       if (username !== currentUsername) {
         await onUpdateUsername(username);
+      }
+
+      if (user) {
+        await updateUserProfile({
+          userId: user.id,
+          username: username,
+          email: userEmail,
+          imageUrl: selectedImage || user.imageUrl,
+          updatedAt: Date.now(),
+        });
       }
 
       onOpenChange(false);

@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { YStack, Input, Button, Text, Form, XStack, Card, H1, Paragraph, Separator } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { useSignUp } from '@clerk/clerk-expo';
+import { updateUserProfile } from '../../utils/firebase';
+import { useFirebaseUser } from '../../utils/useFirebaseUser';
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
+  const { signIn: signInToFirebase } = useFirebaseUser();
   const router = useRouter();
 
   const [username, setUsername] = useState('');
@@ -46,8 +49,20 @@ export default function SignUpScreen() {
       });
 
       if (completeSignUp.status === 'complete') {
+        // Sign in to Firebase first
+        await signInToFirebase();
+        
+        // Create user profile in Firebase
+        await updateUserProfile({
+          userId: completeSignUp.createdUserId!,
+          username,
+          email: emailAddress,
+          imageUrl: '',
+          updatedAt: Date.now(),
+        });
+
         await setActive({ session: completeSignUp.createdSessionId });
-        router.replace('/');
+        router.replace('/(tabs)');
       } else {
         console.error(JSON.stringify(completeSignUp, null, 2));
         setError('Verification failed. Please try again.');
@@ -61,17 +76,10 @@ export default function SignUpScreen() {
   return (
     <YStack f={1} padding="$4" space="$4" backgroundColor="$background">
       <YStack space="$4" marginVertical="$6">
-        <H1 
-          size="$9" 
-          color="$blue10"
-          fontFamily="$heading"
-          letterSpacing={-1}>
+        <H1 size="$9" color="$blue10" fontFamily="$heading" letterSpacing={-1}>
           Join StackSplit
         </H1>
-        <Paragraph 
-          size="$5" 
-          theme="alt2"
-          fontFamily="$body">
+        <Paragraph size="$5" theme="alt2" fontFamily="$body">
           {pendingVerification
             ? 'Please check your email for verification code'
             : 'Create an account to start splitting expenses'}
@@ -79,11 +87,7 @@ export default function SignUpScreen() {
       </YStack>
 
       {error ? (
-        <Text 
-          color="$red10" 
-          textAlign="center"
-          fontFamily="$body"
-          fontWeight="$6">
+        <Text color="$red10" textAlign="center" fontFamily="$body" fontWeight="$6">
           {error}
         </Text>
       ) : null}
@@ -92,9 +96,7 @@ export default function SignUpScreen() {
         {!pendingVerification ? (
           <Form onSubmit={onSignUpPress} space="$4">
             <YStack space="$3">
-              <Text 
-                fontWeight="$6"
-                fontFamily="$body">
+              <Text fontWeight="$6" fontFamily="$body">
                 Username
               </Text>
               <Input
@@ -170,9 +172,7 @@ export default function SignUpScreen() {
       <YStack space="$4" alignItems="center">
         <XStack space="$2" alignItems="center">
           <Separator />
-          <Text 
-            color="$gray11"
-            fontFamily="$body">
+          <Text color="$gray11" fontFamily="$body">
             OR
           </Text>
           <Separator />

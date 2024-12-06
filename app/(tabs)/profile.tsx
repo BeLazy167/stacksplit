@@ -1,8 +1,9 @@
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { Text, YStack, Button, H2, Card, XStack, Avatar, Separator } from 'tamagui';
 import { PageWrapper } from '~/components/Layout/PageWrapper';
-import { Moon, Settings, ChevronRight, Sun } from '@tamagui/lucide-icons';
+import { Moon, Settings, ChevronRight, Sun, Users } from '@tamagui/lucide-icons';
 import { EditProfileModal } from '~/components/Profile/EditProfileModal';
+import { FriendsModal } from '~/components/Profile/FriendsModal';
 import { useState, memo, useCallback, useEffect } from 'react';
 import { useDarkMode } from '~/utils/DarkModeContext';
 import { Switch as RNSwitch, Platform } from 'react-native';
@@ -38,6 +39,7 @@ export default function ProfileScreen() {
   const { signOut } = useAuth();
   const { user, isLoaded } = useUser();
   const [isOpen, setIsOpen] = useState(false);
+  const [isFriendsOpen, setIsFriendsOpen] = useState(false);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -111,18 +113,35 @@ export default function ProfileScreen() {
             </YStack>
           </XStack>
 
-          <Button
-            onPress={handleEditProfile}
-            pressStyle={{ opacity: 0.7 }}
-            animation="quick"
-            backgroundColor="$background"
-            borderColor="$gray8"
-            borderWidth={1}>
-            <XStack alignItems="center" space="$2">
-              <Settings size={16} color={theme.color.val} />
-              <Text>Edit Profile</Text>
-            </XStack>
-          </Button>
+          <XStack space="$2">
+            <Button
+              flex={1}
+              onPress={handleEditProfile}
+              pressStyle={{ opacity: 0.7 }}
+              animation="quick"
+              backgroundColor="$background"
+              borderColor="$gray8"
+              borderWidth={1}>
+              <XStack alignItems="center" space="$2">
+                <Settings size={16} color={theme.color.val} />
+                <Text>Edit Profile</Text>
+              </XStack>
+            </Button>
+
+            <Button
+              flex={1}
+              onPress={() => setIsFriendsOpen(true)}
+              pressStyle={{ opacity: 0.7 }}
+              animation="quick"
+              backgroundColor="$background"
+              borderColor="$gray8"
+              borderWidth={1}>
+              <XStack alignItems="center" space="$2">
+                <Users size={16} color={theme.color.val} />
+                <Text>Friends</Text>
+              </XStack>
+            </Button>
+          </XStack>
         </Card>
 
         {/* Settings Card */}
@@ -181,6 +200,8 @@ export default function ProfileScreen() {
             }}
           />
         )}
+
+        {isFriendsOpen && <FriendsModal open={isFriendsOpen} onOpenChange={setIsFriendsOpen} />}
 
         <Text>Clerk User ID: {user?.id}</Text>
         <Text>Firebase User ID: {firebaseUser?.uid}</Text>

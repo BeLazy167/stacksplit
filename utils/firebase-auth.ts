@@ -11,7 +11,7 @@ export const useFirebaseAuth = () => {
     try {
       // Get a Firebase token from Clerk
       const token = await getToken({ template: 'integration_firebase' });
-      
+
       if (!token) {
         throw new Error('No Firebase token available');
       }
@@ -29,4 +29,4 @@ export const useFirebaseAuth = () => {
     auth,
     signInWithClerk,
   };
-}; 
+};
