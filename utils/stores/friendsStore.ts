@@ -9,7 +9,7 @@ import {
   getFriendRequests,
   getFriendships,
 } from '~/utils/firebase';
-import { UserProfile } from '~/types/friends';
+import { UserProfile, FriendshipError } from '~/types/friends';
 
 interface FriendsState {
   friends: UserProfile[];
@@ -24,6 +24,7 @@ interface FriendsState {
   acceptRequest: (userId: string, friendId: string) => Promise<void>;
   removeFriend: (userId: string, friendId: string) => Promise<void>;
   clearError: () => void;
+  clearSearchResults: () => void;
 }
 
 export const useFriendsStore = create<FriendsState>()(
@@ -51,7 +52,13 @@ export const useFriendsStore = create<FriendsState>()(
             outgoingRequests: outgoingReqs,
           });
         } catch (error) {
-          set({ error: 'Failed to initialize friends data' });
+          console.error('Initialize error:', error);
+          set({
+            error:
+              error instanceof FriendshipError
+                ? error.message
+                : 'Failed to initialize friends data',
+          });
         } finally {
           set({ isLoading: false });
         }
@@ -68,22 +75,23 @@ export const useFriendsStore = create<FriendsState>()(
           const results = await searchUsersAPI(query, currentUserId);
           const { friends, incomingRequests, outgoingRequests } = get();
 
-          // Add proper type checking and handle potential undefined values
+          // Filter out users that are already friends or have pending requests
           const filteredResults = results.filter((user) => {
             if (!user?.userId) return false;
 
-            return (
-              user.userId !== currentUserId &&
-              !friends?.some((f) => f?.userId === user.userId) &&
-              !incomingRequests?.some((r) => r?.userId === user.userId) &&
-              !outgoingRequests?.some((r) => r?.userId === user.userId)
-            );
+            const isNotFriend = !friends?.some((f) => f?.userId === user.userId);
+            const noIncomingRequest = !incomingRequests?.some((r) => r?.userId === user.userId);
+            const noOutgoingRequest = !outgoingRequests?.some((r) => r?.userId === user.userId);
+
+            return isNotFriend && noIncomingRequest && noOutgoingRequest;
           });
 
           set({ searchResults: filteredResults });
         } catch (error) {
           console.error('Search error:', error);
-          set({ error: 'Failed to search users' });
+          set({
+            error: error instanceof FriendshipError ? error.message : 'Failed to search users',
+          });
         } finally {
           set({ isLoading: false });
         }
@@ -93,9 +101,19 @@ export const useFriendsStore = create<FriendsState>()(
         set({ isLoading: true, error: null });
         try {
           await sendFriendRequest(fromUserId, toUserId);
-          await get().initialize(fromUserId);
+
+          // Update local state
+          const { searchResults } = get();
+          const updatedResults = searchResults.filter((user) => user.userId !== toUserId);
+
+          await get().initialize(fromUserId); // Refresh all friend data
+          set({ searchResults: updatedResults }); // Update search results
         } catch (error) {
-          set({ error: 'Failed to send friend request' });
+          console.error('Send request error:', error);
+          set({
+            error:
+              error instanceof FriendshipError ? error.message : 'Failed to send friend request',
+          });
         } finally {
           set({ isLoading: false });
         }
@@ -105,9 +123,25 @@ export const useFriendsStore = create<FriendsState>()(
         set({ isLoading: true, error: null });
         try {
           await acceptFriendRequest(userId, friendId);
-          await get().initialize(userId);
+
+          // Update local state
+          const { incomingRequests, friends } = get();
+          const acceptedUser = incomingRequests.find((user) => user.userId === friendId);
+
+          if (acceptedUser) {
+            set({
+              friends: [...friends, acceptedUser],
+              incomingRequests: incomingRequests.filter((user) => user.userId !== friendId),
+            });
+          }
+
+          await get().initialize(userId); // Refresh all friend data
         } catch (error) {
-          set({ error: 'Failed to accept friend request' });
+          console.error('Accept request error:', error);
+          set({
+            error:
+              error instanceof FriendshipError ? error.message : 'Failed to accept friend request',
+          });
         } finally {
           set({ isLoading: false });
         }
@@ -117,16 +151,74 @@ export const useFriendsStore = create<FriendsState>()(
         set({ isLoading: true, error: null });
         try {
           await removeFriend(userId, friendId);
-          await get().initialize(userId);
+
+          // Update local state
+          const { friends } = get();
+          set({
+            friends: friends.filter((friend) => friend.userId !== friendId),
+          });
+
+          await get().initialize(userId); // Refresh all friend data
         } catch (error) {
-          set({ error: 'Failed to remove friend' });
+          console.error('Remove friend error:', error);
+          set({
+            error: error instanceof FriendshipError ? error.message : 'Failed to remove friend',
+          });
         } finally {
           set({ isLoading: false });
         }
       },
 
       clearError: () => set({ error: null }),
+
+      clearSearchResults: () => set({ searchResults: [] }),
     }),
     { name: 'friends-store' }
   )
 );
+
+// Usage examples:
+
+/**
+ * Initialize the store:
+ *
+ * const friendsStore = useFriendsStore();
+ *
+ * useEffect(() => {
+ *   friendsStore.initialize(currentUserId);
+ * }, [currentUserId]);
+ */
+
+/**
+ * Search and send request:
+ *
+ * const { searchUsers, sendRequest, searchResults, isLoading, error } = useFriendsStore();
+ *
+ * const handleSearch = async (query: string) => {
+ *   await searchUsers(query, currentUserId);
+ * };
+ *
+ * const handleSendRequest = async (toUserId: string) => {
+ *   await sendRequest(currentUserId, toUserId);
+ * };
+ */
+
+/**
+ * Handle incoming requests:
+ *
+ * const { incomingRequests, acceptRequest } = useFriendsStore();
+ *
+ * const handleAcceptRequest = async (friendId: string) => {
+ *   await acceptRequest(currentUserId, friendId);
+ * };
+ */
+
+/**
+ * Remove friend:
+ *
+ * const { friends, removeFriend } = useFriendsStore();
+ *
+ * const handleRemoveFriend = async (friendId: string) => {
+ *   await removeFriend(currentUserId, friendId);
+ * };
+ */

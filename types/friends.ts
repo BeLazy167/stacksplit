@@ -28,3 +28,13 @@ export interface Friendship {
   lastInteractionAt: Timestamp;
   status: 'active' | 'blocked';
 }
+
+export class FriendshipError extends Error {
+  constructor(
+    message: string,
+    public code: string
+  ) {
+    super(message);
+    this.name = 'FriendshipError';
+  }
+}

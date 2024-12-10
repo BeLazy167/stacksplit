@@ -51,10 +51,9 @@ export default function SignUpScreen() {
       if (completeSignUp.status === 'complete') {
         // Sign in to Firebase first
         await signInToFirebase();
-        
+
         // Create user profile in Firebase
-        await updateUserProfile({
-          userId: completeSignUp.createdUserId!,
+        await updateUserProfile(completeSignUp.createdUserId!, {
           username,
           email: emailAddress,
           imageUrl: '',
