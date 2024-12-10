@@ -65,7 +65,7 @@ export const useFriendsStore = create<FriendsState>()(
 
         set({ isLoading: true, error: null });
         try {
-          const results = await searchUsersAPI(query);
+          const results = await searchUsersAPI(query, currentUserId);
           const { friends, incomingRequests, outgoingRequests } = get();
 
           // Add proper type checking and handle potential undefined values
