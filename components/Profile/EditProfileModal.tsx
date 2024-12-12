@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sheet, Input, Button, XStack, YStack, Text, H2, Circle } from 'tamagui';
+import { Sheet, Input, Button, XStack, YStack, Text, H2, Circle, ScrollView } from 'tamagui';
 import { useUser } from '@clerk/clerk-expo';
 import { Camera, X } from '@tamagui/lucide-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,15 +16,97 @@ interface EditProfileModalProps {
   onUpdateUsername: (username: string) => Promise<void>;
 }
 
-export function EditProfileModal({
-  open,
-  onOpenChange,
-  currentUsername,
+interface ProfileImageSectionProps {
+  selectedImage: string | null;
+  userImageUrl?: string;
+  onImagePick: () => void;
+  isLoading: boolean;
+}
+
+const ProfileImageSection = ({
+  selectedImage,
+  userImageUrl,
+  onImagePick,
+  isLoading,
+}: ProfileImageSectionProps) => (
+  <YStack alignItems="center" space="$3">
+    <Circle size={100} borderWidth={2} borderColor="$gray8" overflow="hidden">
+      <Image
+        source={{ uri: selectedImage || userImageUrl }}
+        style={{ width: 100, height: 100 }}
+        contentFit="cover"
+      />
+    </Circle>
+
+    <Button size="$3" theme="blue" icon={Camera} onPress={onImagePick} disabled={isLoading}>
+      Change Photo
+    </Button>
+  </YStack>
+);
+
+interface ProfileFormProps {
+  username: string;
+  userEmail: string;
+  error: string;
+  isLoading: boolean;
+  onUsernameChange: (text: string) => void;
+}
+
+const ProfileForm = ({
+  username,
   userEmail,
-  onUpdateUsername,
-}: EditProfileModalProps) {
+  error,
+  isLoading,
+  onUsernameChange,
+}: ProfileFormProps) => (
+  <YStack space="$4" flex={1}>
+    <YStack space="$2">
+      <Text color="$gray11">Username</Text>
+      <Input
+        value={username}
+        onChangeText={onUsernameChange}
+        placeholder="Enter username"
+        borderColor={error ? '$red8' : '$gray8'}
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="default"
+        returnKeyType="done"
+      />
+      {error && (
+        <Text color="$red10" fontSize="$2">
+          {error}
+        </Text>
+      )}
+    </YStack>
+
+    <YStack space="$2">
+      <Text color="$gray11">Email</Text>
+      <Input value={userEmail} editable={false} opacity={0.7} backgroundColor="$gray3" />
+    </YStack>
+  </YStack>
+);
+
+interface ActionButtonsProps {
+  onSave: () => void;
+  onCancel: () => void;
+  isLoading: boolean;
+  hasChanges: boolean;
+}
+
+const ActionButtons = ({ onSave, onCancel, isLoading, hasChanges }: ActionButtonsProps) => (
+  <YStack space="$4">
+    <Button size="$4" theme="blue" onPress={onSave} disabled={isLoading || !hasChanges}>
+      {isLoading ? 'Saving...' : 'Save Changes'}
+    </Button>
+    <Button size="$4" theme="gray" onPress={onCancel} disabled={isLoading}>
+      Cancel
+    </Button>
+  </YStack>
+);
+
+const ModalContent = ({ onOpenChange, isSheet = false, ...props }: any) => {
   const { user } = useUser();
-  const [username, setUsername] = useState(currentUsername);
+  const [username, setUsername] = useState(props.currentUsername);
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,21 +146,20 @@ export function EditProfileModal({
 
       if (selectedImage && base64Data) {
         const formattedBase64 = `data:image/jpeg;base64,${base64Data}`;
-
         await user?.setProfileImage({
           file: formattedBase64,
         });
       }
 
-      if (username !== currentUsername) {
-        await onUpdateUsername(username);
+      if (username !== props.currentUsername) {
+        await props.onUpdateUsername(username);
       }
 
       if (user) {
-        await updateUserProfile({
+        await updateUserProfile(user.id, {
           userId: user.id,
           username: username,
-          email: userEmail,
+          email: props.userEmail,
           imageUrl: selectedImage || user.imageUrl,
           updatedAt: Date.now(),
         });
@@ -93,7 +174,9 @@ export function EditProfileModal({
     }
   };
 
-  const ContentComponent = ({ isSheet = false }) => (
+  const hasChanges = username !== props.currentUsername || selectedImage !== null;
+
+  return (
     <YStack space="$4" flex={1}>
       <XStack justifyContent="space-between" alignItems="center">
         <H2 size="$6">Edit Profile</H2>
@@ -109,70 +192,57 @@ export function EditProfileModal({
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}>
-        <YStack space="$4" flex={1}>
-          <YStack alignItems="center" space="$3">
-            <Circle size={100} borderWidth={2} borderColor="$gray8" overflow="hidden">
-              <Image
-                source={{ uri: selectedImage || user?.imageUrl }}
-                style={{ width: 100, height: 100 }}
-                contentFit="cover"
-              />
-            </Circle>
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+        <ScrollView
+          flex={1}
+          bounces={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="none">
+          <YStack space="$4" flex={1} paddingBottom="$4">
+            <ProfileImageSection
+              selectedImage={selectedImage}
+              userImageUrl={user?.imageUrl}
+              onImagePick={handleImagePick}
+              isLoading={isLoading}
+            />
 
-            <Button
-              size="$3"
-              theme="blue"
-              icon={Camera}
-              onPress={handleImagePick}
-              disabled={isLoading}>
-              Change Photo
-            </Button>
+            <ProfileForm
+              username={username}
+              userEmail={props.userEmail}
+              error={error}
+              isLoading={isLoading}
+              onUsernameChange={(text) => {
+                setUsername(text);
+                setError('');
+              }}
+            />
+
+            <ActionButtons
+              onSave={handleSave}
+              onCancel={() => onOpenChange(false)}
+              isLoading={isLoading}
+              hasChanges={hasChanges}
+            />
           </YStack>
-
-          <YStack space="$4" flex={1}>
-            <YStack space="$2">
-              <Text color="$gray11">Username</Text>
-              <Input
-                value={username}
-                onChangeText={(text) => {
-                  setUsername(text);
-                  setError('');
-                }}
-                placeholder="Enter username"
-                borderColor={error ? '$red8' : '$gray8'}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              {error && (
-                <Text color="$red10" fontSize="$2">
-                  {error}
-                </Text>
-              )}
-            </YStack>
-
-            <YStack space="$2">
-              <Text color="$gray11">Email</Text>
-              <Input value={userEmail} editable={false} opacity={0.7} backgroundColor="$gray3" />
-            </YStack>
-          </YStack>
-
-          <YStack space="$4" marginTop="auto">
-            <Button
-              size="$4"
-              theme="blue"
-              onPress={handleSave}
-              disabled={isLoading || (!username && !selectedImage)}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
-            </Button>
-            <Button size="$4" theme="gray" onPress={() => onOpenChange(false)} disabled={isLoading}>
-              Cancel
-            </Button>
-          </YStack>
-        </YStack>
+        </ScrollView>
       </KeyboardAvoidingView>
     </YStack>
   );
+};
+
+export function EditProfileModal({
+  open,
+  onOpenChange,
+  currentUsername,
+  userEmail,
+  onUpdateUsername,
+}: EditProfileModalProps) {
+  const modalProps = {
+    currentUsername,
+    userEmail,
+    onUpdateUsername,
+  };
 
   if (Platform.OS === 'ios') {
     return (
@@ -182,7 +252,7 @@ export function EditProfileModal({
         presentationStyle="pageSheet"
         onRequestClose={() => onOpenChange(false)}>
         <YStack flex={1} backgroundColor="$background" padding="$4">
-          <ContentComponent />
+          <ModalContent {...modalProps} onOpenChange={onOpenChange} />
         </YStack>
       </Modal>
     );
@@ -200,7 +270,7 @@ export function EditProfileModal({
       <Sheet.Overlay animation="lazy" enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
       <Sheet.Frame padding="$4" space="$4" backgroundColor="$background">
         <Sheet.Handle />
-        <ContentComponent isSheet={true} />
+        <ModalContent {...modalProps} onOpenChange={onOpenChange} isSheet={true} />
       </Sheet.Frame>
     </Sheet>
   );
